@@ -8,8 +8,7 @@
 
 The [pyunrealsdk](https://github.com/bl-sdk/pyunrealsdk) mod manager for:
 - Borderlands 1
-
-Note Borderlands 1 *Enhanced* is not currently supported.
+- Borderlands 1 Enhanced
 
 # Development
 When developing, it's recommended to point pyunrealsdk directly at this repo. To do this:
