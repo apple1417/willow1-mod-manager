@@ -1,6 +1,5 @@
-from collections.abc import Iterator, Sequence
 from dataclasses import KW_ONLY, dataclass, field
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from mods_base import (
     BaseOption,
@@ -15,8 +14,12 @@ from mods_base import (
 from ui_utils import TrainingBox
 from willow1_mod_menu.options import create_keybinds_menu
 
-from . import WillowGFxMenu, WillowGFxMenuScreenFrameKeyBinds
 from .options import OptionPopulator
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Sequence
+
+    from . import WillowGFxMenu, WillowGFxMenuScreenFrameKeyBinds
 
 try:
     from ui_utils import TrainingBox
@@ -86,7 +89,7 @@ class ModOptionPopulator(OptionPopulator):
             yield BoolOption(
                 "Enabled",
                 self.mod.is_enabled,
-                on_change=lambda _, now_enabled: (
+                on_change_anytime=lambda _, now_enabled: (
                     self.mod.enable() if now_enabled else self.mod.disable()
                 ),
             )

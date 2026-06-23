@@ -1,7 +1,7 @@
 import re
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from unrealsdk import logging
 from unrealsdk.unreal import UObject
@@ -15,6 +15,9 @@ from mods_base import (
     SpinnerOption,
 )
 from willow1_mod_menu.util import WillowGFxMenu, find_focused_item
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 type WillowGFxLobbyTools = UObject
 type WillowGFxMenuScreenFrameKeyBinds = UObject

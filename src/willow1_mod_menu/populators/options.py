@@ -1,5 +1,5 @@
-from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, override
 
 from unrealsdk import logging
 
@@ -15,16 +15,17 @@ from mods_base import (
     SpinnerOption,
     html_to_plain_text,
 )
+from willow1_mod_menu.options import create_nested_options_menu
+
+from . import Populator, WillowGFxLobbyTools, WillowGFxMenu
 
 try:
     from ui_utils import TrainingBox
 except ImportError:
     TrainingBox = None
-from typing import override
 
-from willow1_mod_menu.options import create_nested_options_menu
-
-from . import Populator, WillowGFxLobbyTools, WillowGFxMenu
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 @dataclass

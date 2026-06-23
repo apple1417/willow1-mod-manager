@@ -1,11 +1,13 @@
 from dataclasses import dataclass
-from types import EllipsisType
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from mods_base import JSON, BaseOption, get_ordered_mod_list, html_to_plain_text
 from willow1_mod_menu.options import create_mod_options_menu
 
 from . import Populator, WillowGFxLobbyTools, WillowGFxMenu
+
+if TYPE_CHECKING:
+    from types import EllipsisType
 
 
 @dataclass

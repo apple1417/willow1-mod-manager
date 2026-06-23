@@ -1,12 +1,14 @@
 # ruff: noqa: D103
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from unrealsdk.hooks import Type
-from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
 
 from mods_base import hook
 
 from .lobby import open_lobby_mods_menu
+
+if TYPE_CHECKING:
+    from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
 
 MODS_MENU_TAG = "willow1-mod-menu:mods-frontend"
 
