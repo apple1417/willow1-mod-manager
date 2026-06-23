@@ -198,7 +198,7 @@ def get_focused_mod(menu: WillowGFxLobbyMultiplayer) -> Mod | None:
 
     try:
         return drawn_mods[int(match.group(1))]
-    except (IndexError, ValueError):
+    except IndexError, ValueError:
         return None
 
 
