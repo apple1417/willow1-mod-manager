@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 # ruff: noqa: T201
+from __future__ import annotations
+
 import json
 import re
 import shutil
 import subprocess
 import tomllib
-from collections.abc import Iterator
 from functools import cache
 from io import BytesIO
 from os import path
 from pathlib import Path
+from typing import TYPE_CHECKING
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from pick_release_name import pick_release_name
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 THIS_FOLDER = Path(__file__).parent
 
@@ -39,8 +44,7 @@ VALID_MOD_FILE_SUFFIXES = {".py", ".pyi", ".pyd", ".md"}
 # And there are a few extra files which we want which aren't matched by the above
 INIT_SCRIPT = MODS_FOLDER / "__main__.py"
 SETTINGS_GITIGNORE = MODS_FOLDER / "settings" / ".gitignore"
-STUBS_DIR = THIS_FOLDER / "libs" / "pyunrealsdk" / "stubs"
-STUBS_LICENSE = THIS_FOLDER / "libs" / "pyunrealsdk" / "LICENSE"
+STUBS_DIR = THIS_FOLDER / "stubs"
 
 # The default license we use for any folders which don't already have one (due to being a submodule)
 LICENSE = THIS_FOLDER / "LICENSE"
@@ -397,4 +401,4 @@ if __name__ == "__main__":
                 ZIP_STUBS_FOLDER / file.relative_to(STUBS_DIR),
             )
 
-        zip_file.write(STUBS_LICENSE, ZIP_STUBS_FOLDER / STUBS_LICENSE.name)
+        zip_file.write(LICENSE, ZIP_STUBS_FOLDER / LICENSE.name)
