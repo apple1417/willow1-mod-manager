@@ -21,7 +21,9 @@ jobs:
       matrix:
         preset:
         - clang-release
+        - clang64-release
         - msvc-release
+        - msvc64-release
 
     steps:
     - name: Setup Clang
@@ -32,7 +34,7 @@ jobs:
       if: startswith(matrix.preset, 'msvc')
       uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
-        arch: x86
+        arch: ${{ fromJSON('["x86", "x64"]')[contains(matrix.preset, '64')] }}
 
     - name: Setup CMake and Ninja
       uses: lukka/get-cmake@latest
@@ -52,7 +54,10 @@ jobs:
 
     - name: Rename Release Zip (draft full release)
       if: inputs.new-release-tag != '' && startswith(matrix.preset, 'msvc')
-      run: mv willow1-sdk-${{ matrix.preset }}.zip willow1-sdk.zip
+      run: >
+        mv
+        willow1${{ fromJSON('["", "-enhanced"]')[contains(matrix.preset, '64')] }}-sdk-${{ matrix.preset }}.zip
+        bl1${{ fromJSON('["", "-enhanced"]')[contains(matrix.preset, '64')] }}-sdk.zip
 
     - name: Upload Artifact
       if: inputs.new-release-tag == '' || startswith(matrix.preset, 'msvc')
@@ -70,9 +75,15 @@ jobs:
         toolchain:
           - preset: clang-cross-release
             container: clang-cross
+          - preset: clang-cross64-release
+            container: clang-cross
           - preset: llvm-mingw-release
             container: llvm-mingw
+          - preset: llvm-mingw64-release
+            container: llvm-mingw
           - preset: mingw-release
+            container: mingw
+          - preset: mingw64-release
             container: mingw
 
     steps:
@@ -123,6 +134,7 @@ jobs:
       matrix:
         preset:
         - clang-release
+        - clang64-release
 
     steps:
     - name: Setup Clang

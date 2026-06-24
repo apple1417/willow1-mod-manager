@@ -25,8 +25,10 @@ THIS_FOLDER = Path(__file__).parent
 ZIP_MODS_FOLDER = Path("sdk_mods")
 ZIP_STUBS_FOLDER = ZIP_MODS_FOLDER / ".stubs"
 ZIP_SETTINGS_FOLDER = ZIP_MODS_FOLDER / "settings"
-ZIP_EXECUTABLE_FOLDER = Path("Binaries")
-ZIP_PLUGINS_FOLDER = ZIP_EXECUTABLE_FOLDER / "Plugins"
+ZIP_EXECUTABLE_FOLDER_CLASSIC = Path("Binaries")
+ZIP_EXECUTABLE_FOLDER_ENHANCED = Path("Binaries") / "Win64"
+ZIP_PLUGINS_FOLDER_CLASSIC = ZIP_EXECUTABLE_FOLDER_CLASSIC / "Plugins"
+ZIP_PLUGINS_FOLDER_ENHANCED = ZIP_EXECUTABLE_FOLDER_ENHANCED / "Plugins"
 
 # The base CMake directories - these need the preset added after
 BUILD_DIR_BASE = THIS_FOLDER / "out" / "build"
@@ -181,13 +183,20 @@ def iter_non_gitignored_mod_folders() -> Iterator[Path]:
         yield folder
 
 
-def zip_dlls(zip_file: ZipFile, install_dir: Path) -> None:
+def zip_dlls(
+    zip_file: ZipFile,
+    install_dir: Path,
+    zip_executable_folder: Path,
+    zip_plugins_folder: Path,
+) -> None:
     """
     Adds all the dlls/related files to the zip.
 
     Args:
         zip_file: The zip file to add the dlls to.
         install_dir: The CMake install dir with the built files.
+        zip_executable_folder: Relative location of the executable folder within the zip.
+        zip_plugins_folder: Relative location of the plugins folder within the zip.
     """
     exe_folder = install_dir / INSTALL_EXECUTABLE_FOLDER_NAME
 
@@ -197,9 +206,9 @@ def zip_dlls(zip_file: ZipFile, install_dir: Path) -> None:
 
         dest: Path
         if file.is_relative_to(exe_folder):
-            dest = ZIP_EXECUTABLE_FOLDER / file.relative_to(exe_folder)
+            dest = zip_executable_folder / file.relative_to(exe_folder)
         else:
-            dest = ZIP_PLUGINS_FOLDER / file.relative_to(install_dir)
+            dest = zip_plugins_folder / file.relative_to(install_dir)
 
         zip_file.write(file, dest)
 
@@ -208,7 +217,7 @@ def zip_dlls(zip_file: ZipFile, install_dir: Path) -> None:
     # file means we ignore them.
     py_stem = next(install_dir.glob("python*.zip")).stem
     zip_file.writestr(
-        str(ZIP_PLUGINS_FOLDER / (py_stem + "._pth")),
+        str(zip_plugins_folder / (py_stem + "._pth")),
         (
             f"{py_stem}.zip\n"  # dummy comment to force multiline
             "DLLs\n"
@@ -216,17 +225,18 @@ def zip_dlls(zip_file: ZipFile, install_dir: Path) -> None:
     )
 
 
-def zip_config_file(zip_file: ZipFile) -> None:
+def zip_config_file(zip_file: ZipFile, zip_plugins_folder: Path) -> None:
     """
     Adds the config file to the zip.
 
     Args:
         zip_file: The zip file to add the config file to.
+        zip_plugins_folder: Relative location of the plugins folder within the zip.
     """
     # Path.relative_to doesn't work when where's no common base, need to use os.path
     # These paths are relative to the plugins folder
-    init_script_path = path.relpath(ZIP_MODS_FOLDER / INIT_SCRIPT.name, ZIP_PLUGINS_FOLDER)
-    pyexec_root = path.relpath(ZIP_MODS_FOLDER, ZIP_PLUGINS_FOLDER)
+    init_script_path = path.relpath(ZIP_MODS_FOLDER / INIT_SCRIPT.name, zip_plugins_folder)
+    pyexec_root = path.relpath(ZIP_MODS_FOLDER, zip_plugins_folder)
 
     version_number = tomllib.loads(MANAGER_PYPROJECT.read_text())["project"]["version"]
     git_version = get_git_repo_version()
@@ -251,7 +261,7 @@ def zip_config_file(zip_file: ZipFile) -> None:
         f"display_version = {json.dumps(release_name)}\n"
     )
 
-    zip_file.writestr(str(ZIP_PLUGINS_FOLDER / "unrealsdk.toml"), config)
+    zip_file.writestr(str(zip_plugins_folder / "unrealsdk.toml"), config)
 
 
 def iter_mod_files(mod_folder: Path, debug: bool) -> Iterator[Path]:
@@ -375,12 +385,24 @@ if __name__ == "__main__":
 
     assert install_dir.exists() and install_dir.is_dir(), "install dir doesn't exist"
 
-    zip_name = f"willow1-sdk-{args.preset}.zip"
+    # Maybe not the most meticulous way to tell the builds apart..
+    if "64" in args.preset:
+        print("Enhanced build")
+        zip_executable_folder = ZIP_EXECUTABLE_FOLDER_ENHANCED
+        zip_plugins_folder = ZIP_PLUGINS_FOLDER_ENHANCED
+        name_infix = "-enhanced"
+    else:
+        print("Classic build")
+        zip_executable_folder = ZIP_PLUGINS_FOLDER_CLASSIC
+        zip_plugins_folder = ZIP_PLUGINS_FOLDER_CLASSIC
+        name_infix = ""
+
+    zip_name = f"willow1{name_infix}-sdk-{args.preset}.zip"
     print(f"Zipping {zip_name} ...")
 
     with ZipFile(zip_name, "w", ZIP_DEFLATED, compresslevel=9) as zip_file:
-        zip_dlls(zip_file, install_dir)
-        zip_config_file(zip_file)
+        zip_dlls(zip_file, install_dir, zip_executable_folder, zip_plugins_folder)
+        zip_config_file(zip_file, zip_plugins_folder)
 
         for folder in iter_non_gitignored_mod_folders():
             mod_files = list(iter_mod_files(folder, "debug" in args.preset))
