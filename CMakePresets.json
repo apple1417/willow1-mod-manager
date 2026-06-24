@@ -5,11 +5,7 @@
       "name": "_base",
       "hidden": true,
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-      "architecture": {
-        "value": "Win32",
-        "strategy": "external"
-      }
+      "installDir": "${sourceDir}/out/install/${presetName}"
     },
     {
       "name": "_clang_x86",
@@ -21,6 +17,17 @@
       },
       "generator": "Ninja",
       "toolchainFile": "libs/pyunrealsdk/common_cmake/clang-x86.cmake"
+    },
+    {
+      "name": "_clang_x64",
+      "hidden": true,
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{VSINSTALLDIR}",
+        "rhs": ""
+      },
+      "generator": "Ninja",
+      "toolchainFile": "libs/pyunrealsdk/common_cmake/clang-x64.cmake"
     },
     {
       "name": "_clang_cross_x86",
@@ -37,15 +44,18 @@
       "toolchainFile": "libs/pyunrealsdk/common_cmake/clang-cross-x86.cmake"
     },
     {
-      "name": "_mingw_x86",
+      "name": "_clang_cross_x64",
       "hidden": true,
       "condition": {
         "type": "notEquals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
+      "cacheVariables": {
+        "MSVC_WINE_ENV_SCRIPT": "/win-sdk/bin/x64/msvcenv.sh"
+      },
       "generator": "Ninja",
-      "toolchainFile": "libs/pyunrealsdk/common_cmake/i686-w64-mingw32.cmake"
+      "toolchainFile": "libs/pyunrealsdk/common_cmake/clang-cross-x64.cmake"
     },
     {
       "name": "_llvm_mingw_x86",
@@ -57,6 +67,39 @@
       },
       "generator": "Ninja",
       "toolchainFile": "libs/pyunrealsdk/common_cmake/llvm-i686-w64-mingw32.cmake"
+    },
+    {
+      "name": "_llvm_mingw_x64",
+      "hidden": true,
+      "condition": {
+        "type": "notEquals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "generator": "Ninja",
+      "toolchainFile": "libs/pyunrealsdk/common_cmake/llvm-x86_64-w64-mingw32.cmake"
+    },
+    {
+      "name": "_mingw_x86",
+      "hidden": true,
+      "condition": {
+        "type": "notEquals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "generator": "Ninja",
+      "toolchainFile": "libs/pyunrealsdk/common_cmake/i686-w64-mingw32.cmake"
+    },
+    {
+      "name": "_mingw_x64",
+      "hidden": true,
+      "condition": {
+        "type": "notEquals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "generator": "Ninja",
+      "toolchainFile": "libs/pyunrealsdk/common_cmake/x86_64-w64-mingw32.cmake"
     },
     {
       "name": "_msvc",
@@ -72,6 +115,25 @@
       },
       "generator": "Ninja",
       "toolchainFile": "libs/pyunrealsdk/common_cmake/msvc.cmake"
+    },
+    {
+      "name": "_x86",
+      "hidden": true,
+      "architecture": {
+        "value": "Win32",
+        "strategy": "external"
+      }
+    },
+    {
+      "name": "_x64",
+      "hidden": true,
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "WILLOW64": "1"
+      }
     },
     {
       "name": "_debug",
@@ -91,6 +153,7 @@
       "name": "clang-debug",
       "inherits": [
         "_base",
+        "_x86",
         "_clang_x86",
         "_debug"
       ]
@@ -99,7 +162,26 @@
       "name": "clang-release",
       "inherits": [
         "_base",
+        "_x86",
         "_clang_x86",
+        "_release"
+      ]
+    },
+    {
+      "name": "clang64-debug",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_clang_x64",
+        "_debug"
+      ]
+    },
+    {
+      "name": "clang64-release",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_clang_x64",
         "_release"
       ]
     },
@@ -107,6 +189,7 @@
       "name": "clang-cross-debug",
       "inherits": [
         "_base",
+        "_x86",
         "_clang_cross_x86",
         "_debug"
       ]
@@ -115,7 +198,26 @@
       "name": "clang-cross-release",
       "inherits": [
         "_base",
+        "_x86",
         "_clang_cross_x86",
+        "_release"
+      ]
+    },
+    {
+      "name": "clang-cross64-debug",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_clang_cross_x64",
+        "_debug"
+      ]
+    },
+    {
+      "name": "clang-cross64-release",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_clang_cross_x64",
         "_release"
       ]
     },
@@ -123,6 +225,7 @@
       "name": "mingw-debug",
       "inherits": [
         "_base",
+        "_x86",
         "_mingw_x86",
         "_debug"
       ]
@@ -131,7 +234,26 @@
       "name": "mingw-release",
       "inherits": [
         "_base",
+        "_x86",
         "_mingw_x86",
+        "_release"
+      ]
+    },
+    {
+      "name": "mingw64-debug",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_mingw_x64",
+        "_debug"
+      ]
+    },
+    {
+      "name": "mingw64-release",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_mingw_x64",
         "_release"
       ]
     },
@@ -139,6 +261,7 @@
       "name": "llvm-mingw-debug",
       "inherits": [
         "_base",
+        "_x86",
         "_llvm_mingw_x86",
         "_debug"
       ]
@@ -147,7 +270,26 @@
       "name": "llvm-mingw-release",
       "inherits": [
         "_base",
+        "_x86",
         "_llvm_mingw_x86",
+        "_release"
+      ]
+    },
+    {
+      "name": "llvm-mingw64-debug",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_llvm_mingw_x64",
+        "_debug"
+      ]
+    },
+    {
+      "name": "llvm-mingw64-release",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_llvm_mingw_x64",
         "_release"
       ]
     },
@@ -155,6 +297,7 @@
       "name": "msvc-debug",
       "inherits": [
         "_base",
+        "_x86",
         "_msvc",
         "_debug"
       ]
@@ -163,6 +306,25 @@
       "name": "msvc-release",
       "inherits": [
         "_base",
+        "_x86",
+        "_msvc",
+        "_release"
+      ]
+    },
+    {
+      "name": "msvc64-debug",
+      "inherits": [
+        "_base",
+        "_x64",
+        "_msvc",
+        "_debug"
+      ]
+    },
+    {
+      "name": "msvc64-release",
+      "inherits": [
+        "_base",
+        "_x64",
         "_msvc",
         "_release"
       ]

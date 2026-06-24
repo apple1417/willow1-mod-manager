@@ -241,11 +241,6 @@ def play_sound(
         populator.on_activate(obj, idx)
         return
 
-    # TODO: The enhanced version actually has a separate state for mouse over which breaks the
-    #  assumed selection logic. Now it uses `mSecondHighlight._visible = true|false` which is the
-    #  slightly grey highlight. The original game just updates the selection when you hover over it
-    #  so a simple fix would be to force update the selection ourself.
-
     # The same sound is used for both sliders and spinners.
     focused = find_focused_item(obj)
     if not populator.is_slider(idx):
