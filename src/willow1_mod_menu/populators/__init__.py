@@ -10,6 +10,7 @@ from mods_base import (
     BaseOption,
     BoolOption,
     DropdownOption,
+    Game,
     KeybindOption,
     SliderOption,
     SpinnerOption,
@@ -144,6 +145,11 @@ class Populator(ABC):
         Returns:
             The formatted label.
         """
+        # In BL1E, sliders natively display their value
+        if Game.get_current() == Game.BL1E:
+            return option.display_name
+
+        # In classic, you can't see the number, insert it into the label
         value = option.value
         if option.is_integer:
             value = round(value)
@@ -254,10 +260,12 @@ class Populator(ABC):
 
         option.value = value
 
-        menu.SetVariableString(
-            find_focused_item(menu) + ".mLabel.text",
-            self.format_slider_label(option),
-        )
+        if Game.get_current() != Game.BL1E:
+            # In classic, we need to update the label with the new value
+            menu.SetVariableString(
+                find_focused_item(menu) + ".mLabel.text",
+                self.format_slider_label(option),
+            )
 
     def draw_keybind(
         self,

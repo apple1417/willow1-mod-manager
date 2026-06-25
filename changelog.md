@@ -61,6 +61,7 @@
 - Now properly keeps track of what item you selected when opening a nested menu, and returns to that
   item when you close it.
 - Tried to improve how fraction slider option values are displayed.
+- Tweaks to support BL1 Enhanced.
 
 ## v2.1: Orion
 ### Willow1 Mod Menu v1.1
