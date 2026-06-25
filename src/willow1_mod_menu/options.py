@@ -215,11 +215,21 @@ def get_selected_idx(menu: WillowGFxMenu) -> int | None:
         return None
 
 
-slider_next_tick_info: tuple[WeakPointer, str, Populator, int] | None = None
-
-
 # Similarly to the lobby menu, we need to use sounds to detect when you click an option/adjust a
-# slider, since we can't safely pass callback names to ActionScript
+# slider, since we can't safely pass callback names to ActionScript, and we also need to delay a
+# tick due to kb/mouse differences.
+# In classic, everything happens before the sound, *except for* slider mouse inputs, which are
+# after, and thus need to wait a tick.
+# In enhanced, everything works the same for keyboard. And for mouse, the values update the same,
+# but the focused item does not. Enhanced added new mouse focus logic (the grey item), separate from
+# keyboard (the yellow item), which all our logic checks. When you click something, it does update
+# the keyboard focus to the same item - but only after the sound. So in enhanced, we need to wait a
+# tick for focus to update on any input, in case it was by mouse.
+# For simplictly, we'll just always delay a tick.
+
+play_sound_next_tick_info: tuple[WeakPointer, str] | None = None
+
+
 @hook("GearboxFramework.GearboxGFxMovie:PlaySpecialUISound")
 def play_sound(
     obj: UObject,
@@ -227,57 +237,46 @@ def play_sound(
     _ret: Any,
     _func: BoundFunction,
 ) -> None:
-    if args.SoundString not in ("Confirm", "SliderMovement"):
+    if (sound := args.SoundString) not in ("Confirm", "SliderMovement"):
+        return
+
+    global play_sound_next_tick_info
+    play_sound_next_tick_info = WeakPointer(obj), sound
+    play_sound_next_tick.enable()
+
+
+@hook("WillowGame.WillowUIInteraction:TickImp")
+def play_sound_next_tick(*_: Any) -> None:
+    play_sound_next_tick.disable()
+
+    global play_sound_next_tick_info
+    if play_sound_next_tick_info is None:
+        return
+    weak_menu, sound = play_sound_next_tick_info
+    play_sound_next_tick_info = None
+    if (menu := weak_menu()) is None:
         return
 
     try:
         populator = populator_stack[-1]
     except IndexError:
         return
-    if (idx := get_selected_idx(obj)) is None:
+    if (idx := get_selected_idx(menu)) is None:
         return
 
-    if args.SoundString == "Confirm":
-        populator.on_activate(obj, idx)
+    if sound == "Confirm":
+        populator.on_activate(menu, idx)
         return
 
     # The same sound is used for both sliders and spinners.
-    focused = find_focused_item(obj)
+    focused = find_focused_item(menu)
     if not populator.is_slider(idx):
         # We can do spinners more easily first
-        choice: float = obj.GetVariableNumber(focused + ".mChoice")
-        populator.on_spinner_change(obj, idx, int(choice))
+        choice: float = menu.GetVariableNumber(focused + ".mChoice")
+        populator.on_spinner_change(menu, idx, int(choice))
         return
 
-    # Sliders have the same problem as in the lobby movie, for kb input they plays the sound after
-    # updating the value, and we could run our callbacks here, but for mouse input they play the
-    # sound before.
-    # Save a bunch of data we already have, then wait for next tick.
-
-    global slider_next_tick_info
-    slider_next_tick_info = (
-        WeakPointer(obj),
-        focused + ".mValue",
-        populator,
-        idx,
-    )
-
-    slider_next_tick.enable()
-
-
-@hook("WillowGame.WillowUIInteraction:TickImp")
-def slider_next_tick(*_: Any) -> None:
-    slider_next_tick.disable()
-
-    global slider_next_tick_info
-    if slider_next_tick_info is None:
-        return
-    weak_menu, path, populator, idx = slider_next_tick_info
-    slider_next_tick_info = None
-
-    if (menu := weak_menu()) is None:
-        return
-    value = menu.GetVariableNumber(path)
+    value = menu.GetVariableNumber(focused + ".mValue")
 
     if not math.isfinite(value):
         # If something's become invalid, we'll have gotten a NaN back. We really don't want to set
