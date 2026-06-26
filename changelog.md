@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.2 (Upcoming)
+## v2.2: Warmonger
 - Added support for BL1E, big thanks to Ry.
 - Fixed the race condition which would sometimes cause the SDK to fail to initialize with a "no
   module named keybinds" error.
