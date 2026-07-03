@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3 (Upcoming)
+- Fixed that the release zip for classic put the pluginloader in the wrong location, meaning fresh
+  installs would not load. Upgraded installs still worked, no functional changes.
+
 ## v2.2: Warmonger
 - Added support for BL1E, big thanks to Ry.
 - Fixed the race condition which would sometimes cause the SDK to fail to initialize with a "no
