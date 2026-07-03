@@ -393,7 +393,7 @@ if __name__ == "__main__":
         name_infix = "-enhanced"
     else:
         print("Classic build")
-        zip_executable_folder = ZIP_PLUGINS_FOLDER_CLASSIC
+        zip_executable_folder = ZIP_EXECUTABLE_FOLDER_CLASSIC
         zip_plugins_folder = ZIP_PLUGINS_FOLDER_CLASSIC
         name_infix = ""
 
